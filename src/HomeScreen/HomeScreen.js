@@ -1,18 +1,15 @@
+'use strict';
 //This is an example code for NavigationDrawer//
-import React, { Component } from 'react';
+import React from 'react';
 //import react in our code.
 import { StyleSheet, View, Text, FlatList,Alert,TouchableOpacity } from 'react-native';
 // import all basic components
 import {Icon, Fab } from 'native-base';
 
 import CustomRow from './CustomRow';
-import Fabab from '../Components/Fab';
-//import MyImage from '../Image/index.js';
-
-//import { FloatingAction } from "react-native-floating-action";
 
 
-export default class HomeScreen extends Component {
+export default class HomeScreen extends React.Component {
 		
   //HomeScreen Component
   render() {
@@ -41,7 +38,7 @@ export default class HomeScreen extends Component {
 				style={{ backgroundColor: 'white', }}
 				position="bottomRight"
 				onPress={(name) => {
-					this.props.navigation.navigate('EditScreen', {title: 'Add New Contact'})}}>
+					this.props.navigation.navigate('EditScreen', {title: 'Add New Contact', isNewContact:true})}}>
 				<Icon name="add" style={{ color:'#4057FF' }} />
 			</Fab>
 		</View>
@@ -104,79 +101,5 @@ const DATA = [
 	isFavorite: false,
 	
   },
-   {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    name: 'First Item',
-    mobNumber: '8927673638',
-    phNumber: 'First Item',
-    photo: "require('../Image/image1.png')",
-	isFavorite: false,
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    name: 'Second Item',
-    mobNumber: '5463782922',
-    phNumber: 'Second Item',
-    photo: "require('../Image/image3.png')",
-	isFavorite: true,
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    name: 'Third Item',
-    mobNumber: 'Third Item',
-    phNumber: '98765654321',
-    photo: "image3",
-	isFavorite: false,
-	
-  },
-   {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    name: 'First Item',
-    mobNumber: '8927673638',
-    phNumber: 'First Item',
-    photo: "require('../Image/image1.png')",
-	isFavorite: false,
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    name: 'Second Item',
-    mobNumber: '5463782922',
-    phNumber: 'Second Item',
-    photo: "require('../Image/image3.png')",
-	isFavorite: true,
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    name: 'Third Item',
-    mobNumber: 'Third Item',
-    phNumber: '98765654321',
-    photo: "image3",
-	isFavorite: false,
-	
-  },
-   {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    name: 'First Item',
-    mobNumber: '8927673638',
-    phNumber: 'First Item',
-    photo: "require('../Image/image1.png')",
-	isFavorite: false,
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    name: 'Second Item',
-    mobNumber: '5463782922',
-    phNumber: 'Second Item',
-    photo: "require('../Image/image3.png')",
-	isFavorite: true,
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    name: 'Third Item',
-    mobNumber: 'Third Item',
-    phNumber: '98765654321',
-    photo: "image3",
-	isFavorite: false,
-	
-  },
+
 ];

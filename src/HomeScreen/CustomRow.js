@@ -1,10 +1,11 @@
+'use strict';
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 
 
 const CustomRow = ({ name, mobNumber, photo, isFavorite, item, navigation }) => (
 
-	<TouchableOpacity onPress={() => {navigation.navigate('EditScreen', {title: 'Edit Contact',dataItem: item})}}>
+	<TouchableOpacity onPress={() => {navigation.navigate('EditScreen', {title: 'Edit Contact',dataItem: item, isNewContact:false})}}>
     <View style={styles.container}>
         <Image 
 		//source={{ uri: photo }} 

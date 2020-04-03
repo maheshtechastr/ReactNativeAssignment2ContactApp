@@ -1,11 +1,9 @@
 'use strict';
-//This is an example code for NavigationDrawer//
-import React, { Component } from 'react';
-//import react in our code.
-import { View, Image, TouchableOpacity } from 'react-native';
-// import all basic components
 
-//For React Navigation 4+
+import React from 'react';
+
+import { View, Image, TouchableOpacity } from 'react-native';
+
 import {createAppContainer} from 'react-navigation';
 import {createDrawerNavigator} from 'react-navigation-drawer';
 import {createStackNavigator} from 'react-navigation-stack';
@@ -14,7 +12,7 @@ import ContactList from './HomeScreen/HomeScreen.js';
 import Favorites from './FavoritesScreen/FavoritesScreen';
 
 
-class NavigationDrawerStructure extends Component {
+class NavigationDrawerStructure extends React.Component {
   //Structure for the navigatin Drawer
   toggleDrawer = () => {
     //Props to open/close the drawer
@@ -22,7 +20,7 @@ class NavigationDrawerStructure extends Component {
   };
   render() {
     return (
-      <View style={{ flexDirection: 'row', color:'#123' }}>
+      <View style={{ flexDirection: 'row'}}>
         <TouchableOpacity onPress={this.toggleDrawer.bind(this)}>
           {/*Donute Button Image */}
           <Image
@@ -52,12 +50,12 @@ const Favorites_StackNavigator = createStackNavigator({
   Second: {
     screen: Favorites,
     navigationOptions: ({ navigation }) => ({
-      title: 'Favorites List',
+      title: 'Favorite Contact List',
       headerLeft: () => <NavigationDrawerStructure navigationProps={navigation} />,
       headerStyle: {
-        backgroundColor: '#ababab',
+        //backgroundColor: '#ababab',
       },
-      headerTintColor: '#fff',
+      //headerTintColor: '#fff',
     }),
   },
 });
@@ -70,14 +68,14 @@ const DrawerNavigator = createDrawerNavigator({
     //Title
     screen: ContactList_StackNavigator,
     navigationOptions: {
-      drawerLabel: 'ContactList',
+      drawerLabel: 'Contact List',
     },
   },
   Favorites: {
     //Title
     screen: Favorites_StackNavigator,
     navigationOptions: {
-      drawerLabel: 'Favorites',
+      drawerLabel: 'Favorite Contact List',
     },
   },
 
