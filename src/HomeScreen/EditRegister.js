@@ -13,12 +13,15 @@ import {
 } from 'react-native'
 
 import ImagePicker from '../Image/appImagePicker';
+import firebase from '../Firebase/Firebase';
 
 
 export default class EditRegister extends React.Component {
 	
+
   state = {
-    username: '', land_line: '', phone_number: '', photo:'',
+    name: '', phNumber: '', mobNumber: '', photo:'',
+	isFavorite:false,
   }
   
   static navigationOptions = ({ navigation }) => ({
@@ -38,40 +41,41 @@ export default class EditRegister extends React.Component {
           )
     });
 	
-  onChangeText = (key, val) => {
-    this.setState({ [key]: val })
-  }
-  
-  signUp = async () => {
-    const { username, land_line, mob_number } = this.state
-    try {
-		alert('Saved'),
-      // here place your signup logic
-      console.log('user successfully signed up!: ', success)
-    } catch (err) {
-      console.log('error signing up: ', err)
-    }
-  }
- 
+	onChangeText = (key, val) => {
+		this.setState({ [key]: val })
+	}
+	
 	callbackFunction = (childData) => {
 		this.setState({photo: childData})
 	}
-
+	
+	componentDidMount(){
+		/* 2. Read the params from the navigation state */
+		const { params } = this.props.navigation.state;
+		const dataItem = params ? params.dataItem : null;
+		const {name, photo, mobNumber, isFavorite, phNumber} = dataItem ? dataItem : '';
+		
+		this.setState({
+			name:name,
+			mobNumber:mobNumber,
+			phNumber:phNumber,
+			photo:photo,
+			isFavorite:isFavorite,
+		})
+	}
+	
   render() {
-	/* 2. Read the params from the navigation state */
-	const { params } = this.props.navigation.state;
-	const dataItem = params ? params.dataItem : null;
-	const isNewContact = params ? params.isNewContact : null;
+		/* 2. Read the params from the navigation state */
+		const { params } = this.props.navigation.state;
+		const isNewContact = params ? params.isNewContact : false;
 	
-	const {name, photo, mobNumber, isFavorite, phNumber} = dataItem ? dataItem : '';
-	
-	  
+		
     return (
       <View style={styles.container}>
 	  
 	  <View style={{flex:2, alignItems: 'center', justifyContent:'center'}}>
 		<ImagePicker parentCallback = {this.callbackFunction}
-		source={photo}/>
+		source={this.state.photo}/>
 		<Text>{this.state.photo}</Text>
 	  </View>
 	  
@@ -80,11 +84,11 @@ export default class EditRegister extends React.Component {
 	  <View style={styles.row}>
 	  <Text style={styles.rowLabel}> Name: </Text>
         <TextInput
-		  defaultValue={name?name:this.value}
+		  defaultValue={this.state.name?this.state.name:this.value}
           style={styles.input}        
           autoCapitalize="none"
-          placeholderTextColor='white'
-          onChangeText={val => this.onChangeText('username', val)}
+         
+          onChangeText={val => this.setState({name:val})}
         />
 		</View>
 	  
@@ -92,34 +96,52 @@ export default class EditRegister extends React.Component {
 	  <Text style={styles.rowLabel}> Mobile:
 	  </Text>
         <TextInput		
-		  defaultValue={mobNumber?mobNumber:this.value}
+		  defaultValue={this.state.mobNumber?this.state.mobNumber:this.value}
           style={styles.input}
           autoCapitalize="none"          
-          onChangeText={val => this.onChangeText('mob_number', val)}
+          onChangeText={val => this.onChangeText('mobNumber', val)}
         />
 		</View>
 		
 		<View style={styles.row}>
 			<Text style={styles.rowLabel}>Landline: </Text>
 			<TextInput
-			  defaultValue={phNumber?phNumber:this.value}
+			  defaultValue={this.state.phNumber?this.state.phNumber:this.value}
 			  style={styles.input}
 			  autoCapitalize="none"
-			  onChangeText={val => this.onChangeText('land_line', val)}
+			  onChangeText={val => this.onChangeText('phNumber', val)}
         />
 		</View>
 		
-		{isFavorite && <ActivityIndicator/>}
+		{this.state.isFavorite && <ActivityIndicator/>}
 		
 		</View>
 		
-		<TouchableOpacity  onPress={() => {this.signUp
-		alert('Saved')}}>
+		<TouchableOpacity  onPress={this.addContact}>
 			<Text style={styles.saveButton}>{isNewContact?'Save':'Update'}</Text>
 		</TouchableOpacity>
       </View>
     )
   }
+  
+  	addContact = () => {		
+		//const { name, phNumber, mobNumber, isFavorite } = this.state
+		  //alert('user==>'+Date.now())
+		  //var id = Date.now().toString()
+		  firebase.database().ref('contacts/001').set({
+			id:'00001',
+			name:'ram',
+			mobNumber:'98765431',
+			phNumber:'98765434567',
+			photo:'images',
+		}).then((data)=>{
+			//success callback
+			console.log('data ' , data)
+		}).catch((error)=>{
+			//error callback
+			console.log('error ' , error)
+		})
+	}
 }
 
 const styles = StyleSheet.create({

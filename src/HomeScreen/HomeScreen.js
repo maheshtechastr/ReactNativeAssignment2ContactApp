@@ -81,7 +81,7 @@ const DATA = [
     name: 'First Item',
     mobNumber: '8927673638',
     phNumber: 'First Item',
-    photo: "require('../Image/image1.png')",
+    photo: "https://i.picsum.photos/id/361/200/300.jpg",
 	isFavorite: false,
   },
   {
@@ -89,7 +89,7 @@ const DATA = [
     name: 'Second Item',
     mobNumber: '5463782922',
     phNumber: 'Second Item',
-    photo: "require('../Image/image3.png')",
+    photo: "https://i.picsum.photos/id/237/200/300.jpg",
 	isFavorite: true,
   },
   {
@@ -97,7 +97,16 @@ const DATA = [
     name: 'Third Item',
     mobNumber: 'Third Item',
     phNumber: '98765654321',
-    photo: "image3",
+    photo: "https://i.picsum.photos/id/866/200/300.jpg",
+	isFavorite: false,
+	
+  },
+  {
+    id: '58694a0f-3da1-471f-bd96-145571e29d7',
+    name: 'Third Item',
+    mobNumber: 'Third Item',
+    phNumber: '98765654321',
+    photo: "",
 	isFavorite: false,
 	
   },

@@ -10,7 +10,7 @@ const CustomRow = ({ name, mobNumber, photo, isFavorite, item, navigation }) => 
         <Image 
 		//source={{ uri: photo }} 
 		//source={ {photo }} 
-		source={ require('../Image/image2.png') } 
+		source={ photo? { uri: photo }:require('../Image/image2.png') } 
 				
 		style={styles.photo} />
         <View style={styles.container_text}>

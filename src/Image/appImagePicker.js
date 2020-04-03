@@ -67,7 +67,7 @@ export default class App extends React.Component {
 	  
     } else {
       return <Image
-        source={this.props.source?this.props.source:require('./camera.png')}
+        source={this.props.source?{uri:this.props.source}:require('./camera.png')}
         style={styles.images}
       />
     }
