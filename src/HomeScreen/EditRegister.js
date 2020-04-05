@@ -14,7 +14,7 @@ import {
 
 import ImagePicker from '../Image/appImagePicker';
 import {firebase} from '../Firebase/Firebase';
-
+import Realm from 'realm';
 
 export default class EditRegister extends React.Component {
 	
@@ -24,6 +24,7 @@ export default class EditRegister extends React.Component {
 	isFavorite:false,
 	isUploadingData:false,
 	imageObj:null,
+	realm:null,
   }
   
   static navigationOptions = ({ navigation }) => ({
@@ -67,6 +68,14 @@ export default class EditRegister extends React.Component {
 			phNumber:phNumber?phNumber:'',
 			photo:photo?photo:'',
 			isFavorite:isFavorite?isFavorite:false,
+		})
+		//Realm Database config
+		Realm.open({
+		  schema: [ContactSchema]
+		}).then(realm => {
+			console.log('DB Created')
+		  this.setState({ realm });
+		  console.log('Successfully')
 		})
 	}
 	
@@ -152,7 +161,8 @@ export default class EditRegister extends React.Component {
 
 			  console.log("File uploaded==>"+downloadURL);
 			  
-			   return firebase.database().ref('contacts/'+id).set({
+			   return firebase.database().ref('contacts/').list.push({
+					id,
 					name,
 					mobNumber,
 					phNumber,
@@ -174,6 +184,7 @@ export default class EditRegister extends React.Component {
 				  })
 				})
 			.catch((error)=>{
+				console.log(error);
 			  //throw error;
 			  this.setState({
 				isUploadingData:false,
@@ -230,6 +241,16 @@ export default class EditRegister extends React.Component {
 
 }
 	
+	const ContactSchema = {
+	  name: 'Contact',
+	  properties: {
+		name:     'string',
+		phNumber: 'string?', //optional property
+		mobNumber: 'string', // required property
+		photo:  'string?',  // optional property
+		isFavorite:  'bool'  //  property
+	  }
+	};
 const styles = StyleSheet.create({
   input: {
     width: 300,

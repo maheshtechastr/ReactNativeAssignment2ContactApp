@@ -2,50 +2,79 @@
 //This is an example code for NavigationDrawer//
 import React from 'react';
 //import react in our code.
-import { StyleSheet, View, Text, FlatList,Alert,TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, FlatList, Alert,
+		ActivityIndicator, TouchableOpacity } from 'react-native';
 // import all basic components
 import {Icon, Fab } from 'native-base';
 
 import CustomRow from './CustomRow';
-
+import {firebase} from '../Firebase/Firebase';
 
 export default class HomeScreen extends React.Component {
+	constructor(props) {
+	 super(props);
+	 this.state = {		 
+	   loading: false,
+	   dataSource:[],
+	   
+	  };
+	}
+	componentDidMount(){
+		//Below line can be use to get value from state route
+		firebase.database().ref('contacts/').once('value',  (snapshot)=> {
+			console.log(snapshot.val())
+			this.setState({dataSource:snapshot})
+		});
 		
+	}
   //HomeScreen Component
   render() {
-    return (
-      <View style={styles.MainContainer}>
-       
-		 <FlatList
-			data={DATA}
-			
-			 renderItem={({ item }) => <CustomRow
-                    name={item.name}
-                    mobNumber={item.mobNumber}
-                    photo={item.photo}
-					isFavorite={item.isFavorite}
-					item = {item}
-					navigation={this.props.navigation}
-                 />}
-			
-			keyExtractor={item => item.id}
-		  />
-		  		
-		<View style={{ flex: 1 }}>
-			<Fab
-				direction="up"
-				containerStyle={{ }}
-				style={{ backgroundColor: 'white', }}
-				position="bottomRight"
-				onPress={(name) => {
-					this.props.navigation.navigate('EditScreen', {title: 'Add New Contact', isNewContact:true})}}>
-				<Icon name="add" style={{ color:'#4057FF' }} />
-			</Fab>
-		</View>
+	if(this.state.loading){
+		return( 
+		<View style={styles.loader}> 
 		
-      </View>
-    );
-	 
+		<ActivityIndicator size="large" color="#0c9"/>
+		</View>
+	)} else	if(this.state.dataSource == null){
+		return( 
+		<View style={styles.loader}> 
+		
+		<Text> DataSourceNetWorkError</Text>
+		</View>
+	)} else	{		
+		return (
+		  <View style={styles.MainContainer}>
+		   
+			 <FlatList
+				data={DATA}
+				
+				 renderItem={({ item }) => <CustomRow
+						name={item.name}
+						mobNumber={item.mobNumber}
+						photo={item.photo}
+						isFavorite={item.isFavorite}
+						item = {item}
+						navigation={this.props.navigation}
+					 />}
+				
+				keyExtractor={item => item.id}
+			  />
+					
+			<View style={{ flex: 1 }}>
+				<Fab
+					direction="up"
+					containerStyle={{ }}
+					style={{ backgroundColor: 'white', }}
+					position="bottomRight"
+					onPress={(name) => {
+						this.props.navigation.navigate('EditScreen', {title: 'Add New Contact', isNewContact:true})}}>
+					<Icon name="add" style={{ color:'#4057FF' }} />
+				</Fab>
+			</View>
+			
+		  </View>
+		);
+	}
   }
  
 	
