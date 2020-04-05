@@ -20,11 +20,12 @@ export default class EditRegister extends React.Component {
 	
 
   state = {
-    name: '', phNumber: '', mobNumber: '', photo:'',
+	id:'',
+	name: '', phNumber: '', mobNumber: '', photo:'',
 	isFavorite:false,
 	isUploadingData:false,
-	imageObj:null,
 	realm:null,
+	isNewContact:false,
   }
   
   static navigationOptions = ({ navigation }) => ({
@@ -34,12 +35,13 @@ export default class EditRegister extends React.Component {
             backgroundColor:'gray',
         },
 		headerRight: () => (
-		<TouchableOpacity onPress={() => alert('This is a Favorites button!')}>
-            <Image              
-              source={require('../Image/favoriteInActive.png')}
-			  style={styles.photo}
-            />
-			
+		
+			<TouchableOpacity onPress={this.addToFavoritesContact}>
+				<Image              
+				  source={navigation.state.params.isFavorite?
+				  require('../Image/favoriteActive.png'):require('../Image/favoriteInActive.png')}
+				  style={styles.photo}
+				/>			
 			</TouchableOpacity>
           )
     });
@@ -51,8 +53,7 @@ export default class EditRegister extends React.Component {
 	callbackFunction = (childData) => {
 		var obj = JSON.parse(childData);
 		console.log('URI==>'+obj.uri)
-		this.setState({photo: obj.uri,
-		imageObj:obj,})
+		this.setState({photo: obj.uri})
 	}
 	
 	componentDidMount(){
@@ -60,18 +61,21 @@ export default class EditRegister extends React.Component {
 		/* 2. Read the params from the navigation state */
 		const { params } = this.props.navigation.state;
 		const dataItem = params ? params.dataItem : null;
+		const isNewContact = params ? params.isNewContact : false;
 		const {name, photo, mobNumber, isFavorite, phNumber} = dataItem ? dataItem : '';
 		
 		this.setState({
+			dataItem:dataItem?dataItem:null,
 			name:name?name:'',
 			mobNumber:mobNumber?mobNumber:'',
 			phNumber:phNumber?phNumber:'',
 			photo:photo?photo:'',
 			isFavorite:isFavorite?isFavorite:false,
+			isNewContact:isNewContact?isNewContact:false,
 		})
 		//Realm Database config
 		Realm.open({
-		  schema: [ContactSchema]
+		  schema: [ContactSchema], schemaVersion: 1
 		}).then(realm => {
 			console.log('DB Created')
 		  this.setState({ realm });
@@ -80,11 +84,7 @@ export default class EditRegister extends React.Component {
 	}
 	
   render() {
-		/* 2. Read the params from the navigation state */
-		const { params } = this.props.navigation.state;
-		const isNewContact = params ? params.isNewContact : false;
 	
-		
     return (
       <View style={styles.container}>
 	  
@@ -126,124 +126,95 @@ export default class EditRegister extends React.Component {
 			  autoCapitalize="none"
 			  onChangeText={val => this.onChangeText('phNumber', val)}
         />
+		
+
 		</View>
 		
-		{this.state.isUploadingData && <ActivityIndicator/>}
+		
+		{!this.state.isNewContact && <TouchableOpacity  onPress={this.removeContact}>
+			<Text style={styles.saveButton}>Delete</Text>
+		</TouchableOpacity>}
+		
+		{this.state.isUploadingData && <ActivityIndicator size="large" color="#0c9"/>}
+		
 		
 		</View>
 		
 		<TouchableOpacity  onPress={!this.state.isUploadingData && this.addContact}>
-			<Text style={styles.saveButton}>{isNewContact?'Save':'Update'}</Text>
+			<Text style={styles.saveButton}>{this.state.isNewContact?'Save':'Update'}</Text>
 		</TouchableOpacity>
       </View>
     )
   }
   
+  	addToFavoritesContact = async() => {
+		alert('Add to Favorites list');
+		const{id, realm, isFavorite} = this.state;
+		console.log("FAVORITES=this==>")
+		
+		realm.write(() => {
+		  Contact.isFavorite = !isFavorite;
+		});
+
+		this.setState({isFavorite:!isFavorite})
+		console.log("Favorites=CC==>"+isFavorite)
+		
+	}	
+  	removeContact = async() => {
+		
+		const{id, realm, dataItem} = this.state
+		console.log("DELETE=this==>"+dataItem)
+		var contacts = realm.objects('Contact')
+		 var contactDel = contacts.filtered("id ='"+id+"'");
+		 console.log("DELETE=BB==>"+JSON.stringify(contactDel))
+		// Delete the book
+		realm.delete(contactDel);
+		console.log("DELETE=CC==>"+contactDel)
+		this.props.navigation.goBack()
+	}	
   	addContact = async() => {		
 		const { name, phNumber, mobNumber, isFavorite, photo,
-				imageObj} = this.state
-		  var id = Date.now().toString()
+				realm, id, isNewContact} = this.state
+				var newId='';
+		  if(isNewContact)
+			newId = Date.now().toString()
+			else
+				newId = id
 		 if(!name){
 			return; 
 		 }
 		  this.setState({
 			  isUploadingData:true
 		  })
-		  this.uriToBlob(photo)
-		  .then((blob)=>{
-			  
-			  return this.uploadToFirebase(blob, id+".jpg");
-
-			}).then((snapshot)=>{
-				return snapshot.ref.getDownloadURL();
-			})
-			.then((downloadURL)=>{
-
-			  console.log("File uploaded==>"+downloadURL);
-			  
-			   return firebase.database().ref('contacts/').list.push({
-					id,
-					name,
-					mobNumber,
-					phNumber,
-					isFavorite,
-					photo:downloadURL,
-				});
-				
-			})
-			.then((data)=>{
-					//success callback
-					console.log('success' , data)
-					this.setState({
-					  isUploadingData:false,
-					  name:'',
-					  mobNumber:'',
-					  phNumber:'',
-					  photo:'',
-					  isFavorite:false,
-				  })
-				})
-			.catch((error)=>{
-				console.log(error);
-			  //throw error;
-			  this.setState({
-				isUploadingData:false,
-			  })
-				alert("Oops!, Unable to Add Contact, please try again.");
-			}); 	
+		  realm.write(() => {
+				const contact = realm.create('Contact', 
+					{
+						id:newId,
+						name: name,
+						phNumber:phNumber,
+						mobNumber:mobNumber,
+						photo:photo,
+						isFavorite:isFavorite,
+					});
+					this.setState({isUploadingData:false})
+				console.log("contacts ==>"+JSON.stringify(contact));
+		  });
 			  
 	}
-	
-	uriToBlob = (uri) => {
-
-    return new Promise((resolve, reject) => {
-
-      const xhr = new XMLHttpRequest();
-
-      xhr.onload = function() {
-        // return the blob
-        resolve(xhr.response);
-      };
-      
-      xhr.onerror = function() {
-        // something went wrong
-        reject(new Error('uriToBlob failed'));
-      };
-
-      // this helps us get a blob
-      xhr.responseType = 'blob';
-
-      xhr.open('GET', uri, true);
-      xhr.send(null);
-
-    });
-
-  }
-
-  uploadToFirebase = (blob, fileName) => {
-
-    return new Promise((resolve, reject)=>{
-
-      var storageRef = firebase.storage().ref();
-
-      storageRef.child('contacts/'+fileName).put(blob, {
-        contentType: 'image/jpeg'
-      }).then((snapshot)=>{
-        blob.close();
-        resolve(snapshot);
-      }).catch((error)=>{
-        reject(error);
-      });
-
-    });
-
-  }  
-
+	 
+	componentWillUnmount() {
+		// Close the realm if there is one open.
+		const {realm} = this.state;
+		if (realm !== null && !realm.isClosed) {
+		  realm.close();
+		}
+	}
 }
 	
 	const ContactSchema = {
 	  name: 'Contact',
 	  properties: {
+		id:     'string',
 		name:     'string',
 		phNumber: 'string?', //optional property
 		mobNumber: 'string', // required property

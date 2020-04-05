@@ -9,7 +9,22 @@ import {Icon, Fab } from 'native-base';
 
 import CustomRow from './CustomRow';
 import {firebase} from '../Firebase/Firebase';
+//import {ContactSchema} from './ContactModel';
 
+import Realm from 'realm';
+
+const ContactSchema = {
+	  name: 'Contact',
+	  properties: {
+		id:     'string',
+		name:     'string',
+		phNumber: 'string?', //optional property
+		mobNumber: 'string', // required property
+		photo:  'string?',  // optional property
+		isFavorite:  'bool',  //  property
+	  }
+	};
+	
 export default class HomeScreen extends React.Component {
 	constructor(props) {
 	 super(props);
@@ -20,33 +35,58 @@ export default class HomeScreen extends React.Component {
 	  };
 	}
 	componentDidMount(){
-		//Below line can be use to get value from state route
-		firebase.database().ref('contacts/').once('value',  (snapshot)=> {
-			console.log(snapshot.val())
-			this.setState({dataSource:snapshot})
-		});
+		//Realm Database config
+		Realm.open({
+		  schema: [ContactSchema], schemaVersion: 1})
+		  .then(realm => {
+			console.log('DB Created')
+			
+			let contacts = realm.objects('Contact');
+			let sortedCon = contacts.sorted('name');
+			
+			this.setState({ realm:realm,
+				dataSource:sortedCon
+			});
+			console.log('Successfully==>')
+			
+			console.log("contacts ==>"+JSON.stringify(contacts));
+			console.log("sortedCon ==>"+JSON.stringify(sortedCon));
+		})	
 		
 	}
+	
   //HomeScreen Component
   render() {
+	const { dataSource } = this.state;
 	if(this.state.loading){
 		return( 
 		<View style={styles.loader}> 
 		
 		<ActivityIndicator size="large" color="#0c9"/>
 		</View>
-	)} else	if(this.state.dataSource == null){
+	)} else	if(this.state.dataSource == null || this.state.dataSource.length <=0){
 		return( 
-		<View style={styles.loader}> 
-		
-		<Text> DataSourceNetWorkError</Text>
-		</View>
-	)} else	{		
+			<View style={styles.loader}> 
+			
+			<Text style={styles.message}> No Contacts Available, Please create contact from below + button</Text>
+				<View style={{ flex: 1 }}>
+				<Fab
+					direction="up"
+					containerStyle={{ }}
+					style={{ backgroundColor: 'white', }}
+					position="bottomRight"
+					onPress={(name) => {
+						this.props.navigation.navigate('EditScreen', {title: 'Add New Contact', isNewContact:true})}}>
+					<Icon name="add" style={{ color:'#4057FF' }} />
+				</Fab>
+			</View>
+			</View>)
+	} else {		
 		return (
 		  <View style={styles.MainContainer}>
 		   
 			 <FlatList
-				data={DATA}
+				data={this.state.dataSource}
 				
 				 renderItem={({ item }) => <CustomRow
 						name={item.name}
@@ -88,6 +128,13 @@ export default class HomeScreen extends React.Component {
 			/>
 		);
 	}
+	componentWillUnmount() {
+		// Close the realm if there is one open.
+		const {realm} = this.state;
+		if (realm !== null && !realm.isClosed) {
+		  realm.close();
+		}
+	}
 }
 
 const styles = StyleSheet.create({
@@ -95,49 +142,27 @@ const styles = StyleSheet.create({
     flex: 1,
 	marginTop:5,
 	marginBottom:5,
+	
    },
-  titleC:{
-	  
+  titleC:{	  
 	  color:'#444',
 	  fontSize:23,
   },
+  message:{
+	  textAlign:'center',
+	  paddingTop:50,
+	  //backgroundColor:'#123',
+		
+	  flex:1,
+	  color:'#444',
+	  fontSize:18,
+  },
+  loader:{
+	paddingLeft:16,
+	paddingRight:16,
+	flex: 1,
+    justifyContent: "center",
+    //alignItems: "center",
+    backgroundColor: "#fff"
+  },
 });
-
-
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    name: 'First Item',
-    mobNumber: '8927673638',
-    phNumber: 'First Item',
-    photo: "https://i.picsum.photos/id/361/200/300.jpg",
-	isFavorite: false,
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    name: 'Second Item',
-    mobNumber: '5463782922',
-    phNumber: 'Second Item',
-    photo: "https://i.picsum.photos/id/237/200/300.jpg",
-	isFavorite: true,
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    name: 'Third Item',
-    mobNumber: 'Third Item',
-    phNumber: '98765654321',
-    photo: "https://i.picsum.photos/id/866/200/300.jpg",
-	isFavorite: false,
-	
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d7',
-    name: 'Third Item',
-    mobNumber: 'Third Item',
-    phNumber: '98765654321',
-    photo: "",
-	isFavorite: false,
-	
-  },
-
-];

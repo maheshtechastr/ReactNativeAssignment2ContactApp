@@ -18,7 +18,7 @@ const CustomRow = ({ name, mobNumber, photo, isFavorite, item, navigation }) => 
                Name: {name}
             </Text>
             <Text style={styles.description}>
-                Mobile: {photo}
+                Mobile: {mobNumber}
             </Text>
         </View>
 
@@ -55,7 +55,9 @@ const styles = StyleSheet.create({
 		
     },
     photo: {
-		
+		borderRadius:100,
+		borderWidth:2,
+		borderColor:'#555',
         height: 50,
         width: 50,
     },
