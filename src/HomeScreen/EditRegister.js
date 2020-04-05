@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 
 import ImagePicker from '../Image/appImagePicker';
-import firebase from '../Firebase/Firebase';
+import {firebase} from '../Firebase/Firebase';
 
 
 export default class EditRegister extends React.Component {
@@ -22,6 +22,8 @@ export default class EditRegister extends React.Component {
   state = {
     name: '', phNumber: '', mobNumber: '', photo:'',
 	isFavorite:false,
+	isUploadingData:false,
+	imageObj:null,
   }
   
   static navigationOptions = ({ navigation }) => ({
@@ -46,21 +48,25 @@ export default class EditRegister extends React.Component {
 	}
 	
 	callbackFunction = (childData) => {
-		this.setState({photo: childData})
+		var obj = JSON.parse(childData);
+		console.log('URI==>'+obj.uri)
+		this.setState({photo: obj.uri,
+		imageObj:obj,})
 	}
 	
 	componentDidMount(){
+		console.info('componentDidMount==>'+firebase)
 		/* 2. Read the params from the navigation state */
 		const { params } = this.props.navigation.state;
 		const dataItem = params ? params.dataItem : null;
 		const {name, photo, mobNumber, isFavorite, phNumber} = dataItem ? dataItem : '';
 		
 		this.setState({
-			name:name,
-			mobNumber:mobNumber,
-			phNumber:phNumber,
-			photo:photo,
-			isFavorite:isFavorite,
+			name:name?name:'',
+			mobNumber:mobNumber?mobNumber:'',
+			phNumber:phNumber?phNumber:'',
+			photo:photo?photo:'',
+			isFavorite:isFavorite?isFavorite:false,
 		})
 	}
 	
@@ -113,37 +119,117 @@ export default class EditRegister extends React.Component {
         />
 		</View>
 		
-		{this.state.isFavorite && <ActivityIndicator/>}
+		{this.state.isUploadingData && <ActivityIndicator/>}
 		
 		</View>
 		
-		<TouchableOpacity  onPress={this.addContact}>
+		<TouchableOpacity  onPress={!this.state.isUploadingData && this.addContact}>
 			<Text style={styles.saveButton}>{isNewContact?'Save':'Update'}</Text>
 		</TouchableOpacity>
       </View>
     )
   }
   
-  	addContact = () => {		
-		//const { name, phNumber, mobNumber, isFavorite } = this.state
-		  //alert('user==>'+Date.now())
-		  //var id = Date.now().toString()
-		  firebase.database().ref('contacts/001').set({
-			id:'00001',
-			name:'ram',
-			mobNumber:'98765431',
-			phNumber:'98765434567',
-			photo:'images',
-		}).then((data)=>{
-			//success callback
-			console.log('data ' , data)
-		}).catch((error)=>{
-			//error callback
-			console.log('error ' , error)
-		})
-	}
-}
+  	addContact = async() => {		
+		const { name, phNumber, mobNumber, isFavorite, photo,
+				imageObj} = this.state
+		  var id = Date.now().toString()
+		 if(!name){
+			return; 
+		 }
+		  this.setState({
+			  isUploadingData:true
+		  })
+		  this.uriToBlob(photo)
+		  .then((blob)=>{
+			  
+			  return this.uploadToFirebase(blob, id+".jpg");
 
+			}).then((snapshot)=>{
+				return snapshot.ref.getDownloadURL();
+			})
+			.then((downloadURL)=>{
+
+			  console.log("File uploaded==>"+downloadURL);
+			  
+			   return firebase.database().ref('contacts/'+id).set({
+					name,
+					mobNumber,
+					phNumber,
+					isFavorite,
+					photo:downloadURL,
+				});
+				
+			})
+			.then((data)=>{
+					//success callback
+					console.log('success' , data)
+					this.setState({
+					  isUploadingData:false,
+					  name:'',
+					  mobNumber:'',
+					  phNumber:'',
+					  photo:'',
+					  isFavorite:false,
+				  })
+				})
+			.catch((error)=>{
+			  //throw error;
+			  this.setState({
+				isUploadingData:false,
+			  })
+				alert("Oops!, Unable to Add Contact, please try again.");
+			}); 	
+			  
+	}
+	
+	uriToBlob = (uri) => {
+
+    return new Promise((resolve, reject) => {
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.onload = function() {
+        // return the blob
+        resolve(xhr.response);
+      };
+      
+      xhr.onerror = function() {
+        // something went wrong
+        reject(new Error('uriToBlob failed'));
+      };
+
+      // this helps us get a blob
+      xhr.responseType = 'blob';
+
+      xhr.open('GET', uri, true);
+      xhr.send(null);
+
+    });
+
+  }
+
+  uploadToFirebase = (blob, fileName) => {
+
+    return new Promise((resolve, reject)=>{
+
+      var storageRef = firebase.storage().ref();
+
+      storageRef.child('contacts/'+fileName).put(blob, {
+        contentType: 'image/jpeg'
+      }).then((snapshot)=>{
+        blob.close();
+        resolve(snapshot);
+      }).catch((error)=>{
+        reject(error);
+      });
+
+    });
+
+  }  
+
+}
+	
 const styles = StyleSheet.create({
   input: {
     width: 300,

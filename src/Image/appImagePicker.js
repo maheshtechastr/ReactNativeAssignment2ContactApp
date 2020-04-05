@@ -75,8 +75,10 @@ export default class App extends React.Component {
   
   sendData = () => {	
 	
-    this.props.parentCallback(this.state.fileUri);
+    this.props.parentCallback(JSON.stringify(this.state.filePath));
 	console.log('Send Data ImageUri==>'+this.state.fileUri)
+	//JSON.stringify(response)
+	//console.log('Send Data filePath==>'+JSON.stringify(this.state.filePath))
   }
 
   render() {
