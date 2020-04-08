@@ -5,11 +5,10 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-na
 
 const CustomRow = ({ name, mobNumber, photo, isFavorite, item, navigation }) => (
 
-	<TouchableOpacity onPress={() => {navigation.navigate('EditScreen', {title: 'Edit Contact',dataItem: item, isNewContact:false})}}>
+	<TouchableOpacity onPress={() => {navigation.navigate('EditScreen',
+	{title: 'Edit Contact',dataItem: item, isNewContact:false, isFavorite:isFavorite})}}>
     <View style={styles.container}>
         <Image 
-		//source={{ uri: photo }} 
-		//source={ {photo }} 
 		source={ photo? { uri: photo }:require('../Image/image2.png') } 
 				
 		style={styles.photo} />
@@ -55,6 +54,7 @@ const styles = StyleSheet.create({
 		
     },
     photo: {
+		backgroundColor:'#ccc',
 		borderRadius:100,
 		borderWidth:2,
 		borderColor:'#555',

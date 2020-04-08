@@ -9,7 +9,7 @@ import * as React from 'react';
 import {createAppContainer } from 'react-navigation';	
 import {createStackNavigator} from 'react-navigation-stack';
 
-const PageNavigator = createStackNavigator({
+const MyStackNavigator = createStackNavigator({
   HomeScreen: {
     navigationOptions: {
       headerShown: false
@@ -32,11 +32,11 @@ const PageNavigator = createStackNavigator({
   }
 });
 
-PageNavigator.navigationOptions = ({ navigation }) => ({
+MyStackNavigator.navigationOptions = ({ navigation }) => ({
   tabBarVisible: navigation.state.index === 0,
   swipeEnabled: navigation.state.index === 0
 });
-const App = createAppContainer(PageNavigator);
+const App = createAppContainer(MyStackNavigator);
 
 export default App;
 

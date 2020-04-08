@@ -8,13 +8,14 @@ import { StyleSheet, View, Text, FlatList, Alert,
 import {Icon, Fab } from 'native-base';
 
 import CustomRow from './CustomRow';
-import {firebase} from '../Firebase/Firebase';
-//import {ContactSchema} from './ContactModel';
+import { NavigationEvents } from 'react-navigation';
+
 
 import Realm from 'realm';
 
 const ContactSchema = {
 	  name: 'Contact',
+	  primaryKey: 'id',
 	  properties: {
 		id:     'string',
 		name:     'string',
@@ -34,40 +35,61 @@ export default class HomeScreen extends React.Component {
 	   
 	  };
 	}
+	
 	componentDidMount(){
 		//Realm Database config
 		Realm.open({
 		  schema: [ContactSchema], schemaVersion: 1})
 		  .then(realm => {
 			console.log('DB Created')
-			
-			let contacts = realm.objects('Contact');
-			let sortedCon = contacts.sorted('name');
+						
+			let sortedCon = this.fetchData(realm);
 			
 			this.setState({ realm:realm,
 				dataSource:sortedCon
 			});
 			console.log('Successfully==>')
 			
-			console.log("contacts ==>"+JSON.stringify(contacts));
-			console.log("sortedCon ==>"+JSON.stringify(sortedCon));
-		})	
-		
+		})		
+	}
+	
+	fetchData = (realm) =>{
+		let contacts = realm.objects('Contact');
+		return contacts.sorted('name');
+	}
+	
+	fetchDataNew = () =>{
+		const {realm} = this.state;
+		let contacts = realm.objects('Contact');
+		console.log("fetchDataNew ==>"+JSON.stringify(contacts));
+		let sortedCon = contacts.sorted('name');
+		this.setState({dataSource:sortedCon});
+	}
+	componentWillUnmount() {
+		// Close the realm if there is one open.
+		const {realm} = this.state;
+		if (realm !== null && !realm.isClosed) {
+		  realm.close();
+		}
+		//this._unsubscribe();
 	}
 	
   //HomeScreen Component
   render() {
-	const { dataSource } = this.state;
+
+	const { dataSource, realm} = this.state;
 	if(this.state.loading){
 		return( 
 		<View style={styles.loader}> 
-		
+	
 		<ActivityIndicator size="large" color="#0c9"/>
 		</View>
 	)} else	if(this.state.dataSource == null || this.state.dataSource.length <=0){
 		return( 
 			<View style={styles.loader}> 
-			
+			 <NavigationEvents
+                onDidFocus={this.fetchDataNew}
+                />
 			<Text style={styles.message}> No Contacts Available, Please create contact from below + button</Text>
 				<View style={{ flex: 1 }}>
 				<Fab
@@ -84,7 +106,9 @@ export default class HomeScreen extends React.Component {
 	} else {		
 		return (
 		  <View style={styles.MainContainer}>
-		   
+		    <NavigationEvents
+                onDidFocus={this.fetchDataNew}
+                />
 			 <FlatList
 				data={this.state.dataSource}
 				
@@ -128,13 +152,7 @@ export default class HomeScreen extends React.Component {
 			/>
 		);
 	}
-	componentWillUnmount() {
-		// Close the realm if there is one open.
-		const {realm} = this.state;
-		if (realm !== null && !realm.isClosed) {
-		  realm.close();
-		}
-	}
+	
 }
 
 const styles = StyleSheet.create({
