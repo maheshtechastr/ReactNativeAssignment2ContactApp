@@ -106,7 +106,7 @@ export default class HomeScreen extends React.Component {
 	} else {		
 		return (
 		  <View style={styles.MainContainer}>
-		    <NavigationEvents
+		    <NavigationEvents 
                 onDidFocus={this.fetchDataNew}
                 />
 			 <FlatList
@@ -133,6 +133,7 @@ export default class HomeScreen extends React.Component {
 					onPress={(name) => {
 						this.props.navigation.navigate('EditScreen', {title: 'Add New Contact', isNewContact:true})}}>
 					<Icon name="add" style={{ color:'#4057FF' }} />
+
 				</Fab>
 			</View>
 			

@@ -47,24 +47,29 @@ export default class HomeScreen extends React.Component {
 	}
 	
 	fetchData = (realm) =>{
-		let contacts = realm.objects('Contact');
+		let contacts = realm.objects('Contact').filtered('isFavorite==true');
 		return contacts.sorted('name');
 	}
 	
 	fetchDataNew = () =>{
 		const {realm} = this.state;
-		let contacts = realm.objects('Contact');
+		let contacts = realm.objects('Contact').filtered('isFavorite==true');
 		console.log("fetchDataNew ==>"+JSON.stringify(contacts));
-		let sortedCon = contacts.sorted('name');
-		this.setState({dataSource:sortedCon});
+		
+		if(contacts.length > 0){
+			let sortedCon = contacts.sorted('name');
+			this.setState({dataSource:sortedCon});
+		}else{
+			this.setState({dataSource:null});
+		}
 	}
 	
 	componentWillUnmount() {
 		// Close the realm if there is one open.
-		const {realm} = this.state;
-		if (realm !== null && !realm.isClosed) {
-		  realm.close();
-		}
+		// const {realm} = this.state;
+		// if (realm !== null && !realm.isClosed) {
+		  // realm.close();
+		// }
 	}
 	
   render() {
