@@ -8,97 +8,54 @@ import { StyleSheet, View, Text, FlatList, Alert,
 import {Icon, Fab } from 'native-base';
 
 import CustomRow from './CustomRow';
-import { NavigationEvents } from 'react-navigation';
-
-
-import Realm from 'realm';
-
-const ContactSchema = {
-	  name: 'Contact',
-	  primaryKey: 'id',
-	  properties: {
-		id:     'string',
-		name:     'string',
-		phNumber: 'string?', //optional property
-		mobNumber: 'string', // required property
-		photo:  'string?',  // optional property
-		isFavorite:  'bool',  //  property
-	  }
-	};
+import { connect } from 'react-redux';
+import * as contactAction from '../actions/index';
 	
-export default class HomeScreen extends React.Component {
+class HomeScreen extends React.Component {
 	constructor(props) {
 	 super(props);
 	 this.state = {		 
 	   loading: false,
-	   dataSource:[],
+	   contacts:[],
 	   
 	  };
 	}
 	
 	componentDidMount(){
-		//Realm Database config
-		Realm.open({
-		  schema: [ContactSchema], schemaVersion: 1})
-		  .then(realm => {
-			console.log('DB Created')
-						
-			let sortedCon = this.fetchData(realm);
+		
 			
-			this.setState({ realm:realm,
-				dataSource:sortedCon
-			});
-			console.log('Successfully==>')
-			
-		})		
 	}
 	
-	fetchData = (realm) =>{
-		let contacts = realm.objects('Contact');
-		return contacts.sorted('name');
-	}
 	
-	fetchDataNew = () =>{
-		const {realm} = this.state;
-		let contacts = realm.objects('Contact');
-		console.log("fetchDataNew ==>"+JSON.stringify(contacts));
-		let sortedCon = contacts.sorted('name');
-		this.setState({dataSource:sortedCon});
-	}
 	componentWillUnmount() {
-		// Close the realm if there is one open.
-		const {realm} = this.state;
-		if (realm !== null && !realm.isClosed) {
-		  realm.close();
-		}
-		//this._unsubscribe();
+		
 	}
 	
   //HomeScreen Component
   render() {
-
-	const { dataSource, realm} = this.state;
+	console.log("===>"+JSON.stringify(this.props.contacts.contactList))
+	
 	if(this.state.loading){
 		return( 
 		<View style={styles.loader}> 
 	
 		<ActivityIndicator size="large" color="#0c9"/>
 		</View>
-	)} else	if(this.state.dataSource == null || this.state.dataSource.length <=0){
+	)} else	if(this.props.contacts.contactList.length <= 0){
 		return( 
 			<View style={styles.loader}> 
-			 <NavigationEvents
-                onDidFocus={this.fetchDataNew}
-                />
+		
 			<Text style={styles.message}> No Contacts Available, Please create contact from below + button</Text>
 				<View style={{ flex: 1 }}>
+				
 				<Fab
 					direction="up"
 					containerStyle={{ }}
 					style={{ backgroundColor: 'white', }}
 					position="bottomRight"
 					onPress={(name) => {
-						this.props.navigation.navigate('EditScreen', {title: 'Add New Contact', isNewContact:true})}}>
+						this.props.navigation.navigate('EditScreen',
+						{title: 'Add New Contact', isNewContact:true})}}>
 					<Icon name="add" style={{ color:'#4057FF' }} />
 				</Fab>
 			</View>
@@ -106,24 +63,21 @@ export default class HomeScreen extends React.Component {
 	} else {		
 		return (
 		  <View style={styles.MainContainer}>
-		    <NavigationEvents 
-                onDidFocus={this.fetchDataNew}
-                />
+		  
 			 <FlatList
-				data={this.state.dataSource}
-				
+				data={this.props.contacts.contactList}							
 				 renderItem={({ item }) => <CustomRow
 						name={item.name}
 						mobNumber={item.mobNumber}
 						photo={item.photo}
 						isFavorite={item.isFavorite}
 						item = {item}
-						navigation={this.props.navigation}
+						navigation={this.props.navigation}						
 					 />}
 				
 				keyExtractor={item => item.id}
 			  />
-					
+				
 			<View style={{ flex: 1 }}>
 				<Fab
 					direction="up"
@@ -141,8 +95,7 @@ export default class HomeScreen extends React.Component {
 		);
 	}
   }
- 
-	
+
   FlatListItemSeparator = () => {
 		return (
 		  <View style={{
@@ -155,6 +108,20 @@ export default class HomeScreen extends React.Component {
 	}
 	
 }
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    contacts: state.contacts
+  }
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    createContact: contact => dispatch(contactAction.createContact(contact))
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
 
 const styles = StyleSheet.create({
   MainContainer: {

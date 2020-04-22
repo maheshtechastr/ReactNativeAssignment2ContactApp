@@ -7,44 +7,51 @@ import {
 	TextInput,
 	StyleSheet,
 	TouchableOpacity,
+	TouchableHighlight,
 	Alert,
 	Image,
 	ActivityIndicator,
 } from 'react-native'
 
 import ImagePicker from '../Image/appImagePicker';
-import {firebase} from '../Firebase/Firebase';
-import Realm from 'realm';
+import {Icon } from 'native-base';
 
-export default class EditRegister extends React.Component {
+import { connect } from 'react-redux';
+import * as contactAction from '../actions/index';
+
+
+class EditRegister extends React.Component {
 	
 	state = {
 		id:'',
 		name: '', phNumber: '', mobNumber: '', photo:'',
 		isFavorite:false,
 		isUploadingData:false,
-		realm:null,
-		isNewContact:false,
+		
+		isNewContact:true,
 	}
   
-	static navigationOptions = ({ navigation }) => {
-	const { params = {} } = navigation.state;
-	return {
-		title: `${navigation.state.params.title}`,
-		headerTitleStyle : {textAlign: 'center',alignSelf:'center'},
-		headerStyle:{
-			backgroundColor:'gray',
-		},
-		headerRight: () => (		
-			<TouchableOpacity onPress={()=> params.handleSave()}>
-				<Image              
-				source={`${navigation.state.params.isFavorite}`?
-				require('../Image/favoriteInActive.png') : require('../Image/favoriteActive.png')}
-				style={styles.photo}
-				/>			
-			</TouchableOpacity>
-		)
-	};};
+	static navigationOptions = ({ route, navigation }) => {
+		const {params} = route
+		//console.log("navigationOptions route.params.isFavorite=="+route.params.isFavorite)
+		return {
+			title: route.params.title,			
+			headerTitleAlign: 'center',
+			headerStyle:{
+				backgroundColor:'white',				
+			},
+			headerRight: () => (		
+				<TouchableOpacity onPress={()=> params.handleSave()}>
+					<Image              
+					source={route.params.isFavorite?
+					require('../Image/favoriteActive.png') : require('../Image/favoriteInActive.png')}
+					style={styles.photo}
+					/>			
+				</TouchableOpacity>
+			)
+		};
+	};
+	
 	
 	onChangeText = (key, val) => {
 		this.setState({ [key]: val })
@@ -57,49 +64,40 @@ export default class EditRegister extends React.Component {
 	}
 	
 	componentDidMount(){
-		this.props.navigation.setParams({
-			handleSave: this.addToFavoritesContact,
-			isFavorite:this.state.isFavorite
-		});
-		//Realm Database config
-		Realm.open({
-		  schema: [ContactSchema], schemaVersion: 1
-		}).then(realm => {
-			console.log('DB Created')
-		  this.setState({ realm:realm });
-		  console.log('SuccessfullyAAAA')
-		})
-		console.log('Successfully==bb=>'+JSON.stringify(this.props.navigation.params))
+		
+		
+		console.log('Successfully==bb=>'+JSON.stringify(this.props.route.params))
 		/* 2. Read the params from the navigation state */
 		try{
-			const { params } = this.props.navigation.state
+			const { params } = this.props.route
 			const dataItem = params ? params.dataItem : null
 			const isNewContact = params ? params.isNewContact : false
+			console.log('Successfully=isNewContact=bb=>'+isNewContact)
+			
 			if (dataItem != null){
 				console.info('componentDidMount==>'+JSON.stringify(dataItem))
 				const {id, name, photo, mobNumber, isFavorite, phNumber} = dataItem ;
-					
+					console.log('Successfully=isFavorite=bb=>'+isFavorite)
 				this.setState({
-					id:id?id:'',
-					name:name?name:'',
+					id,
+					name,
 					mobNumber:mobNumber?mobNumber:'',
 					phNumber:phNumber?phNumber:'',
 					photo:photo?photo:'',
-					isFavorite:isFavorite?isFavorite:false,
-					isNewContact:isNewContact?isNewContact:false,
+					isFavorite:isFavorite,
+					isNewContact:isNewContact,
 				});
 			}
 		}catch(error){
 			console.error(error);
 		}
-		
+		this.props.navigation.setParams({
+			handleSave: this.addToFavoritesContact,
+			//isFavorite: this.state.isFavorite
+		});
 	}
 	componentWillUnmount() {
-		// Close the realm if there is one open.
-		// const {realm} = this.state;
-		// if (realm !== null && !realm.isClosed) {
-		  // realm.close();
-		// }
+	
 	}
 	render() {
 
@@ -111,6 +109,7 @@ export default class EditRegister extends React.Component {
 					<ImagePicker parentCallback = {this.callbackFunction}
 					source={this.state.photo}/>
 					<Text>{this.state.photo}</Text>
+					
 				</View>
 
 				<View style={styles.middleSection}>
@@ -146,17 +145,17 @@ export default class EditRegister extends React.Component {
 					</View>
 
 
-					{!this.state.isNewContact && <TouchableOpacity  onPress={this.removeContact}>
+					{!this.state.isNewContact && <TouchableHighlight  onPress={this.removeContact}>
 					<Text style={styles.saveButton}>Delete</Text>
-					</TouchableOpacity>}
+					</TouchableHighlight>}
 
 					{this.state.isUploadingData && <ActivityIndicator size="large" color="#0c9"/>}
 
 				</View>
 
-				<TouchableOpacity  onPress={!this.state.isUploadingData && this.addContact}>
+				<TouchableHighlight  onPress={!this.state.isUploadingData && this.addContact}>
 					<Text style={styles.saveButton}> {this.state.isNewContact?'Save':'Update'}</Text>
-				</TouchableOpacity>
+				</TouchableHighlight>
 			</View>
 		)
 	}
@@ -165,95 +164,96 @@ export default class EditRegister extends React.Component {
 		
 		//alert('Add to Favorites list')
 		const { name, phNumber, mobNumber, isFavorite, photo,
-				realm, id, isNewContact} = this.state
+				 id, isNewContact} = this.state
 		console.log(id+"==FAVORITES=this==>"+isFavorite)
+		
+		if(!name)
+			return
+		if(!mobNumber)
+			return
+		
 		var inverted = !isFavorite;
 		this.props.navigation.setParams({
 			 isFavorite: inverted
 		   });
-		realm.write(() => {
-			 // Update Contact with new price keyed off the id
-			realm.create('Contact', {
-				id:id,
-				name: name,
-				phNumber:phNumber,
-				mobNumber:mobNumber,
-				photo:photo,
-				isFavorite:inverted,
-			}, 'modified');
-		  
-		});
+		
 		console.log(isFavorite+"==FAVORITES=this==>"+inverted)
-		this.setState({isFavorite:!isFavorite});
+		this.setState({isFavorite:inverted});
 		console.log("Favorites=CC==>"+isFavorite);
 		
+		let contact = {
+			  name,
+			  phNumber,
+			  mobNumber,
+			  isFavorite:inverted,
+			  photo,
+			  id,
+			}
+			console.log("FavoritesCon : "+JSON.stringify(contact));
+			this.props.favoriteContact(contact);
 	}	
 	
   	removeContact = async() => {
 		
-		const{id, realm} = this.state
-		console.log("DELETE=this==>")
-			
-			let result = realm.objects('Contact').find(row=>{
-				console.log("DELETE=this==>"+JSON.stringify(row));
-				return row.id==id
-			})
-
-			realm.write(()=>{
-				if(result != null || result != undefined)
-					realm.delete(result)
-			})
-			
+		const{id} = this.state
+		console.log("DELETE=this==>"+id)		
+		this.props.deleteContact(id);
 		this.props.navigation.goBack()
 	}	
 	
   	addContact = async() => {		
 		const { name, phNumber, mobNumber, isFavorite, photo,
-				realm, id, isNewContact} = this.state
+				 id, isNewContact} = this.state
 				
 		var newId='';
 		if(isNewContact || id == null || id.length <=0)
 			newId = Date.now().toString()
 		else {
 			newId = id;
-			//operation = 'modified';
+		
 		}
 		if(!name || !mobNumber){
 			return; 
 		}
-		this.setState({
-		  isUploadingData:true
-		})
-		realm.write(() => {
-			const contact = realm.create('Contact', 
-				{
-					id:newId,
-					name: name,
-					phNumber:phNumber,
-					mobNumber:mobNumber,
-					photo:photo,
-					isFavorite:isFavorite,
-				}, 'modified');
-				this.setState({isUploadingData:false})
-			console.log("contacts ==>"+JSON.stringify(contact));
-		});
+		console.log("Name : "+name);
+		console.log("Mobile : "+mobNumber);
+		console.log("PhoneNumber : "+phNumber);
+		console.log("id : "+newId);
+		let contact = {
+			name,
+			phNumber,
+			mobNumber,
+			isFavorite,
+			photo,
+			id:newId,
+		}
+		console.log("Contac : "+JSON.stringify(contact));
+		if(isNewContact)
+			this.props.createContact(contact);
+		else
+			this.props.updateContact(contact);
+		
 		this.props.navigation.goBack();  
 	}
 	 	
 }
-	
-const ContactSchema = {
-	name: 'Contact',
-	primaryKey: 'id',
-	properties: {
-		id:     'string',
-		name:     'string',
-		phNumber: 'string?', //optional property
-		mobNumber: 'string', // required property
-		photo:  'string?',  // optional property
-		isFavorite:  'bool'  //  property
-	}
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    contacts: state.contacts
+  }
 };
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    createContact: contact => dispatch(contactAction.createContact(contact)),
+    updateContact: contact => dispatch(contactAction.updateContact(contact)),
+    favoriteContact: contact => dispatch(contactAction.favoriteContact(contact)),
+    deleteContact: contact => dispatch(contactAction.deleteContact(contact)),
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditRegister);
 
 const styles = StyleSheet.create({
   input: {

@@ -129,7 +129,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.assignment2contactapp"
+        applicationId "com.contactappredux"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

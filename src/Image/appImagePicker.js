@@ -66,9 +66,9 @@ export default class App extends React.Component {
       />
 	  
     } else {
-      return <Image
-        source={this.props.source?{uri:this.props.source}:require('./camera.png')}
-        style={styles.images}
+      return <Icon
+        name = 'camera' 
+        style={styles.imageIcon}
       />
     }
   }
@@ -113,6 +113,13 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,  
 	borderRadius:100,	
+	
    },
-  
+    imageIcon: {
+    width: 120,
+    height: 120,  
+	borderRadius:100,	
+	fontSize: 120,
+	textAlign: 'center'
+   },
 });

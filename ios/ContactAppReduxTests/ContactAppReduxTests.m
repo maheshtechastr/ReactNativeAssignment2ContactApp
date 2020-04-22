@@ -7,11 +7,11 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface Assignment2ContactAppTests : XCTestCase
+@interface ContactAppReduxTests : XCTestCase
 
 @end
 
-@implementation Assignment2ContactAppTests
+@implementation ContactAppReduxTests
 
 - (BOOL)findSubviewInView:(UIView *)view matching:(BOOL(^)(UIView *view))test
 {

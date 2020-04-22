@@ -1,4 +1,4 @@
-package com.assignment2contactapp;
+package com.contactappredux;
 
 import com.facebook.react.ReactActivity;
 
@@ -10,6 +10,6 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "Assignment2ContactApp";
+    return "ContactAppRedux";
   }
 }

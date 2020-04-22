@@ -1,6 +1,7 @@
 
-const ContactSchema = {
+export default const ContactSchema = {
 	  name: 'Contact',
+	  primaryKey: 'id',
 	  properties: {
 		id:     'string',
 		name:     'string',

@@ -35,12 +35,12 @@ android_library(
 
 android_build_config(
     name = "build_config",
-    package = "com.assignment2contactapp",
+    package = "com.contactappredux",
 )
 
 android_resource(
     name = "res",
-    package = "com.assignment2contactapp",
+    package = "com.contactappredux",
     res = "src/main/res",
 )
 

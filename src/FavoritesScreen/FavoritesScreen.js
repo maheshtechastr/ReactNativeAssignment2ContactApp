@@ -3,101 +3,59 @@
 import React from 'react';
 import { StyleSheet, View, Text, FlatList, Alert,
 		ActivityIndicator, TouchableOpacity } from 'react-native';
-import { NavigationEvents } from 'react-navigation';
-import Realm from 'realm';
 
 import CustomRow from '../HomeScreen/CustomRow';
 
+import { connect } from 'react-redux';
+import * as contactAction from '../actions/index';
 
-const ContactSchema = {
-	  name: 'Contact',
-	  primaryKey: 'id',
-	  properties: {
-		id:     'string',
-		name:     'string',
-		phNumber: 'string?', //optional property
-		mobNumber: 'string', // required property
-		photo:  'string?',  // optional property
-		isFavorite:  'bool',  //  property
-	  }
-	};
-	
-export default class HomeScreen extends React.Component {
+class FavoritesScreen extends React.Component {
 	constructor(props) {
 	 super(props);
 	 this.state = {		 
 	   loading: false,
-	   dataSource:[],	   
+	   //dataSource:[],	   
 	  };
 	}
 	
 	componentDidMount(){
-		//Realm Database config
-		Realm.open({
-		  schema: [ContactSchema], schemaVersion: 1})
-		  .then(realm => {
-								
-			let sortedCon = this.fetchData(realm);
-			
-			this.setState({ realm:realm,
-				dataSource:sortedCon
-			});
-				
-		})		
-	}
-	
-	fetchData = (realm) =>{
-		let contacts = realm.objects('Contact').filtered('isFavorite==true');
-		return contacts.sorted('name');
-	}
-	
-	fetchDataNew = () =>{
-		const {realm} = this.state;
-		let contacts = realm.objects('Contact').filtered('isFavorite==true');
-		console.log("fetchDataNew ==>"+JSON.stringify(contacts));
 		
-		if(contacts.length > 0){
-			let sortedCon = contacts.sorted('name');
-			this.setState({dataSource:sortedCon});
-		}else{
-			this.setState({dataSource:null});
-		}
+		this._unsubscribe = this.props.navigation.addListener('focus', () => {
+			  // do something
+			  console.info('Refresghhhhhhhh');
+			  this.props.allFavoriteContact();
+		});
 	}
+	
+	
 	
 	componentWillUnmount() {
-		// Close the realm if there is one open.
-		// const {realm} = this.state;
-		// if (realm !== null && !realm.isClosed) {
-		  // realm.close();
-		// }
+		 this._unsubscribe();
 	}
 	
   render() {
 
-	const { dataSource, realm} = this.state;
+	const { dataSource} = this.state;
 	if(this.state.loading){
 		return( 
 		<View style={styles.loader}> 
 	
 		<ActivityIndicator size="large" color="#0c9"/>
 		</View>
-	)} else	if(this.state.dataSource == null || this.state.dataSource.length <=0){
+	)} else	if(this.props.contacts.favoriteList.length <=0){
+		
 		return( 
 			<View style={styles.loader}> 
-				<NavigationEvents
-					onDidFocus={this.fetchDataNew}
-					/>
-				<Text style={styles.message}> No Contacts Available, Please create contact from below + button</Text>
+				
+				<Text style={styles.message}> No Favorites Contacts Available, Please add contact from detail page</Text>
 			
 			</View>)
 	} else {		
 		return (
 		  <View style={styles.MainContainer}>
-		    <NavigationEvents
-                onDidFocus={this.fetchDataNew}
-                />
+		   
 			 <FlatList
-				data={this.state.dataSource}
+				data={this.props.contacts.favoriteList}
 				
 				 renderItem={({ item }) => <CustomRow
 						name={item.name}
@@ -130,6 +88,22 @@ export default class HomeScreen extends React.Component {
 	}
 	
 }
+
+const mapStateToProps = (state, ownProps) => {
+	console.info('mapStateToProps=='+JSON.stringify(ownProps))
+	console.info('mapStateToProps=='+JSON.stringify(state))
+  return {
+    contacts: state.contacts
+  }
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    allFavoriteContact: () => dispatch(contactAction.allFavoriteContact())
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(FavoritesScreen);
 
 const styles = StyleSheet.create({
   MainContainer: {

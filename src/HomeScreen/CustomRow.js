@@ -5,8 +5,10 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-na
 
 const CustomRow = ({ name, mobNumber, photo, isFavorite, item, navigation }) => (
 
-	<TouchableOpacity onPress={() => {navigation.navigate('EditScreen',
-	{title: 'Edit Contact',dataItem: item, isNewContact:false, isFavorite:isFavorite})}}>
+	<TouchableOpacity onPress={() => {
+		console.log("CustomRow isFavorite==>"+isFavorite);
+		navigation.navigate('EditScreen',
+	{title: 'Edit Contact',dataItem: item, isNewContact:false, isFavorite})}}>
     <View style={styles.container}>
         <Image 
 		source={ photo? { uri: photo }:require('../Image/image2.png') } 
@@ -35,7 +37,7 @@ const styles = StyleSheet.create({
         marginTop: 3,
         marginBottom: 3,
         borderRadius: 5,
-        backgroundColor: '#FFF',
+        backgroundColor: '#FF0',
         elevation: 2,
     },
     title: {

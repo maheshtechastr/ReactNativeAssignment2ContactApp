@@ -6,37 +6,23 @@ import EditScreen from "./HomeScreen/EditRegister.js";
 
 import * as React from 'react';
 
-import {createAppContainer } from 'react-navigation';	
-import {createStackNavigator} from 'react-navigation-stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
-const MyStackNavigator = createStackNavigator({
-  HomeScreen: {
-    navigationOptions: {
-      headerShown: false
-    },
-    screen: HomeScreen
-  },
+const Stack = createStackNavigator();
 
-  EditScreen: {
-    navigationOptions: {
-		//title: '',
-         headerStyle: {
-			borderBottomWidth:2,
-			borderBottomColor: '#222',	
-			
-		},
-		headerTitleAlign: 'center'
-    },
-	
-    screen: EditScreen
-  }
-});
-
-MyStackNavigator.navigationOptions = ({ navigation }) => ({
-  tabBarVisible: navigation.state.index === 0,
-  swipeEnabled: navigation.state.index === 0
-});
-const App = createAppContainer(MyStackNavigator);
-
-export default App;
+export default class App extends React.Component {
+	render(){
+		return(
+			 <NavigationContainer>
+			  <Stack.Navigator initialRouteName="HomeScreen" >
+				<Stack.Screen name="HomeScreen" component={HomeScreen}
+					options={{headerShown: false}}/>
+				<Stack.Screen name="EditScreen" component={EditScreen}
+					options={EditScreen.navigationOptions} />
+			  </Stack.Navigator>
+			</NavigationContainer>
+		)
+	}
+}
 
